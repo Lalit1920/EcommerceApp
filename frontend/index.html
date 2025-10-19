@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECommerce App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#/home"><i class="fas fa-shopping-cart me-2"></i>ECommerce</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#/products">Products</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu" id="categoriesMenu">
+                            <!-- Categories will be loaded here -->
+                        </ul>
+                    </li>
+                </ul>
+                
+                <!-- Search Bar -->
+                <div class="position-relative me-3">
+                    <form class="d-flex" onsubmit="searchProducts(event)">
+                        <input class="form-control me-2" type="search" id="searchInput" placeholder="Search products..." 
+                               oninput="showSearchSuggestions(this.value)" autocomplete="off">
+                        <button class="btn btn-outline-light" type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                    <div id="searchSuggestions" class="search-suggestions" style="display: none;"></div>
+                </div>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav">
+                    <li class="nav-item" id="cartItem">
+                        <a class="nav-link" href="#/cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge bg-danger" id="cartCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown" id="userMenu" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="userName"></span>
+                        </a>
+                        <ul class="dropdown-menu" id="userMenuDropdown">
+                            <li id="profileMenuItem"><a class="dropdown-item" href="#/profile">Profile</a></li>
+                            <li id="wishlistMenuItem"><a class="dropdown-item" href="#/wishlist">Wishlist</a></li>
+                            <li id="ordersMenuItem"><a class="dropdown-item" href="#/orders">My Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="loginBtn">
+                        <a class="nav-link" href="#/login">Login</a>
+                    </li>
+                    <li class="nav-item" id="adminMenu" style="display: none;">
+                        <a class="nav-link" href="#/admin">Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid p-0">
+        <!-- Home Page -->
+        <div id="homePage">
+            <!-- Category Carousel -->
+            <div class="container-fluid px-0 mb-4">
+                <div id="categoryCarousel" class="custom-carousel">
+                    <div class="carousel-track" id="categoryCarouselTrack">
+                        <!-- Category items will be loaded here -->
+                    </div>
+                    <button class="carousel-btn carousel-btn-prev" onclick="moveCarousel(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-btn carousel-btn-next" onclick="moveCarousel(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product Carousel (Hidden by default) -->
+            <div id="productCarouselSection" class="container-fluid px-0 mb-4" style="display: none;">
+                <div class="custom-carousel">
+                    <div class="d-flex justify-content-between align-items-center px-4 py-2">
+                        <h4 id="productCarouselTitle">Products</h4>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showAllCategoryProducts()">View All</button>
+                    </div>
+                    <div class="carousel-track" id="productCarouselTrack">
+                        <!-- Product items will be loaded here -->
+                    </div>
+                    <button class="carousel-btn carousel-btn-prev" onclick="moveProductCarousel(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-btn carousel-btn-next" onclick="moveProductCarousel(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Categories Section -->
+            <div class="container-fluid mb-5 px-0">
+                <h2 class="text-center mb-4">Shop by Category</h2>
+                <div class="auto-carousel-wrapper">
+                    <div class="auto-carousel-track" id="categoriesGrid">
+                        <!-- Categories will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Products -->
+            <div class="container mb-5">
+                <h2 class="text-center mb-4">Featured Products</h2>
+                <div class="row" id="featuredProducts">
+                    <!-- Featured products will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Page -->
+        <div id="productsPage" style="display: none;">
+            <!-- Category List View -->
+            <div id="categoryListView">
+                <div class="container mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3><i class="fas fa-th-large me-2"></i>All Categories</h3>
+                        <button class="btn btn-outline-primary" onclick="showAllProducts()">
+                            <i class="fas fa-list me-2"></i>View All Products
+                        </button>
+                    </div>
+                    <div class="row" id="categoryListGrid">
+                        <!-- Categories will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product List View -->
+            <div id="productListView" style="display: none;">
+                <div class="container mt-4">
+                    <div class="row">
+                        <!-- Filters Sidebar -->
+                        <div class="col-md-3">
+                            <div class="card shadow-sm">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-filter me-2"></i>Filters</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <button class="btn btn-outline-secondary w-100 mb-3" onclick="showCategoryList()">
+                                            <i class="fas fa-arrow-left me-2"></i>Back to Categories
+                                        </button>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Category</label>
+                                        <select class="form-select" id="categoryFilter" onchange="productModule.applyFilters()">
+                                            <option value="">All Categories</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Price Range</label>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <input type="number" class="form-control" id="minPrice" placeholder="Min" onchange="productModule.applyFilters()">
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="number" class="form-control" id="maxPrice" placeholder="Max" onchange="productModule.applyFilters()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-secondary w-100" onclick="productModule.clearFilters()">Clear Filters</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Products Grid -->
+                        <div class="col-md-9">
+                            <nav aria-label="breadcrumb" class="mb-3">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#" onclick="showCategoryList()">All Categories</a></li>
+                                    <li class="breadcrumb-item active" id="categoryBreadcrumb" aria-current="page">Products</li>
+                                </ol>
+                            </nav>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 id="productListTitle">Products</h4>
+                                <div>
+                                    <span id="productCount">0 products found</span>
+                                </div>
+                            </div>
+                            <div class="row" id="productsGrid">
+                                <!-- Products will be loaded here -->
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <nav aria-label="Products pagination">
+                                <ul class="pagination justify-content-center" id="pagination">
+                                    <!-- Pagination will be loaded here -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="loginPage" style="display: none;"></div>
+        
+        <!-- Register Page -->
+        <div id="registerPage" style="display: none;"></div>
+        
+        <!-- Profile Page -->
+        <div id="profilePage" style="display: none;"></div>
+        
+        <!-- Cart Page -->
+        <div id="cartPage" style="display: none;"></div>
+        
+        <!-- Orders Page -->
+        <div id="ordersPage" style="display: none;"></div>
+        
+        <!-- Admin Page -->
+        <div id="adminPage" style="display: none;"></div>
+        
+        <!-- Wishlist Page -->
+        <div id="wishlistPage" style="display: none;"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5 mt-5">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Brand Section -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-shopping-cart me-2 text-primary"></i>ECommerce</h5>
+                    <p class="text-white-50 mb-3">Your trusted online shopping destination with quality products and excellent service.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-light fs-5 hover-primary"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-light fs-5 hover-primary"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-light fs-5 hover-primary"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-light fs-5 hover-primary"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Shop Section -->
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">Shop</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#/products" class="text-white-50 text-decoration-none hover-light">All Products</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-light">New Arrivals</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-light">Best Sellers</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-light">Sale Items</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Account Section -->
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">Account</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#/login" class="text-white-50 text-decoration-none hover-light">Login</a></li>
+                        <li class="mb-2"><a href="#/orders" class="text-white-50 text-decoration-none hover-light">My Orders</a></li>
+                        <li class="mb-2"><a href="#/wishlist" class="text-white-50 text-decoration-none hover-light">Wishlist</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Support Section -->
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-light">Help Center</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-light">Contact Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-light">Shipping Info</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-light">Returns</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Newsletter Section -->
+                <div class="col-lg-3 col-md-12">
+                    <h6 class="fw-bold mb-3">Stay Updated</h6>
+                    <p class="text-white-50 mb-3">Subscribe to get special offers and updates</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Enter email" id="newsletterEmail">
+                        <button class="btn btn-primary" type="button"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge bg-secondary"><i class="fas fa-shield-alt me-1"></i>Secure</span>
+                        <span class="badge bg-secondary"><i class="fas fa-truck me-1"></i>Fast Delivery</span>
+                        <span class="badge bg-secondary"><i class="fas fa-undo me-1"></i>Easy Returns</span>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4 border-secondary">
+            
+            <!-- Bottom Section -->
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">&copy; 2025 Lalit Kinage. All Rights Reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex justify-content-md-end justify-content-start gap-3 flex-wrap">
+                        <a href="#" class="text-white-50 text-decoration-none hover-light small">Privacy Policy</a>
+                        <a href="#" class="text-white-50 text-decoration-none hover-light small">Terms of Service</a>
+                        <a href="#" class="text-white-50 text-decoration-none hover-light small">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p class="mt-3">Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/modules/product.js"></script>
+    <script src="js/modules/category.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/wishlist.js"></script>
+</body>
+</html>
